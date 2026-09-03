@@ -21,5 +21,6 @@
 /tools/*
 !/tools/serve.py
 !/tools/push.js
+!/tools/setup-push.sh
 
 .DS_Store

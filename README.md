@@ -33,6 +33,7 @@ assets/js/main.js       全部互動與動態
 assets/gen-img/         自製美術
 tools/serve.py          預覽伺服器 + Push
 tools/push.js           Push 按鈕（僅本機注入）
+tools/setup-push.sh     一次性：把 GitHub token 存進 keychain 並首次推送
 build.txt               上次推送的時間戳，用來驗證線上是否生效
 ```
 
