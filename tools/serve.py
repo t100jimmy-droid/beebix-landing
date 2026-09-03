@@ -39,7 +39,9 @@ lock  = threading.Lock()
 def git(*args):
     """跑 git，回傳 (returncode, 合併輸出)。不拋例外，由呼叫端判斷。"""
     p = subprocess.run(['git', *args], cwd=ROOT, capture_output=True, text=True)
-    return p.returncode, (p.stdout + p.stderr).strip()
+    # 只去尾端：porcelain 的狀態碼帶前導空白（如 ' M path'），
+    # 若整段 strip 會吃掉第一行的空白，導致檔名少一個字元。
+    return p.returncode, (p.stdout + p.stderr).rstrip()
 
 
 def remote_info():
@@ -61,7 +63,10 @@ def changed_files():
         return []
     files = []
     for line in out.splitlines():
-        f = line[3:].strip().strip('"')
+        m = re.match(r'^(..) (.+)$', line)      # porcelain：2 碼狀態 + 空白 + 路徑
+        if not m:
+            continue
+        f = m.group(2).strip().strip('"')
         if f and os.path.basename(f) != 'build.txt':
             files.append(f)
     # 已 commit 但還沒 push 的也算「有改動」
@@ -115,6 +120,14 @@ def do_push():
         code, out = git('push', 'origin', 'HEAD')
         if code != 0:
             set_state('error', f'push 失敗：\n{out[:400]}')
+            return
+
+        # GitHub Pages 是從 gh-pages 分支服務的，必須一起同步，
+        # 否則 main 推上去了但線上不會變。
+        git('branch', '-f', 'gh-pages', 'HEAD')
+        code, out = git('push', 'origin', 'gh-pages')
+        if code != 0:
+            set_state('error', f'gh-pages 推送失敗：\n{out[:400]}')
             return
 
         if not site:
