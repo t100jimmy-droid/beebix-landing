@@ -1,0 +1,25 @@
+# ══════════════════════════════════════════════════════════════
+# 預設全部忽略，只放行網站實際需要的檔案。
+# 原因：專案內有 116MB 的參考／借用素材（ref/、assets/ref-img/），
+#       這些絕對不能公開發佈。採「拒絕優先」比逐一排除安全。
+# ══════════════════════════════════════════════════════════════
+/*
+!/.gitignore
+!/README.md
+!/index.html
+!/build.txt
+
+!/assets/
+/assets/*
+!/assets/css/
+!/assets/js/
+!/assets/img/
+!/assets/logo/
+!/assets/gen-img/
+
+!/tools/
+/tools/*
+!/tools/serve.py
+!/tools/push.js
+
+.DS_Store

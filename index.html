@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BeeBix — Wired to Win</title>
+<meta name="description" content="BeeBix — 老虎機、真人娛樂場與即時遊戲，為全球營運商打造的高效能內容供應體系。">
+<link rel="icon" href="assets/logo/07_bolt_icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500&family=Noto+Sans+Thai:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/tokens.css?v=49">
+<link rel="stylesheet" href="assets/css/style.css?v=49">
+</head>
+<body>
+
+<!-- ═══════════ 01 · NAV ═══════════ -->
+<header class="site-header" id="header">
+  <div class="shell">
+    <nav class="nav-pill">
+      <a class="nav-logo" href="#top" aria-label="BeeBix 首頁">
+        <img src="assets/logo/02_mono_white.svg" alt="BeeBix">
+      </a>
+      <ul class="nav-links">
+        <li><a href="#games" data-i18n="nav.try">Try Games</a></li>
+        <li class="has-menu">
+          <button type="button" aria-expanded="false">Games <i class="chev"></i></button>
+          <div class="submenu">
+            <a href="#offer" data-i18n="nav.overview">Games Overview</a><a href="#offer" data-i18n="nav.slots">Slots</a>
+            <a href="#offer" data-i18n="nav.live">Live Casino</a><a href="#offer" data-i18n="nav.instant">Instant &amp; Crash</a>
+          </div>
+        </li>
+        <li><a href="#soon" data-i18n="nav.rewards">Rewards</a></li>
+        <li><a href="#studios" data-i18n="nav.studios">Studios</a></li>
+        <li class="has-menu">
+          <button type="button" aria-expanded="false">Discover <i class="chev"></i></button>
+          <div class="submenu">
+            <a href="#why" data-i18n="nav.about">About</a><a href="#soon" data-i18n="nav.news">News</a><a href="#contact" data-i18n="nav.contact">Contact</a>
+          </div>
+        </li>
+      </ul>
+      <div class="nav-actions">
+        <a class="btn-ghost" href="#contact" data-i18n="nav.partner">Partner Hub</a>
+        <div class="lang-wrap">
+          <button class="lang" type="button" aria-haspopup="listbox" aria-expanded="false"
+                  aria-label="Select language"><span class="lang-cur">EN</span> <i class="chev"></i></button>
+          <div class="lang-menu" role="listbox"></div>
+        </div>
+        <button class="burger" type="button" aria-label="選單"><span></span><span></span><span></span></button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ═══════════ 02 · HERO ═══════════ -->
+<section class="sec hero" id="hero">
+  <div class="backdrop backdrop--down"></div>
+  <div class="glow glow--heroA"></div>
+  <div class="glow glow--heroB"></div>
+  <img class="hero-watermark" src="assets/logo/02_mono_white.svg" alt="" aria-hidden="true">
+  <!-- 品牌吉祥物：填住品牌牌與右側數據之間那塊空白，緩慢浮沉 -->
+  <img class="hero-bee" src="assets/gen-img/bee-hover.webp" alt="" aria-hidden="true" decoding="async">
+
+  <div class="shell hero-inner">
+    <p class="eyebrow" data-reveal>
+      <i class="rule"></i>
+      <img class="eyebrow-logo" src="assets/logo/02_mono_white.svg" alt="BeeBix">
+      <span data-i18n="hero.eyebrow">— GAME CONTENT STUDIO</span>
+    </p>
+
+    <div class="hero-lockup" data-reveal>
+      <h1 class="hero-title">
+        <span class="l1" data-i18n="hero.title1">WIRED</span>
+        <span class="l2" data-i18n="hero.title2">TO WIN</span>
+      </h1>
+      <a class="brand-plate" href="#about" aria-label="BeeBix">
+        <img src="assets/logo/03_mono_black.svg" alt="BeeBix">
+      </a>
+    </div>
+
+    <img class="bolt-streak" src="assets/logo/06_bolt_trim.svg" alt="" aria-hidden="true" data-reveal>
+    <p class="hero-sub" data-reveal data-i18n="hero.sub">老虎機 · 真人娛樂場 · 即時遊戲 — 為全球營運商打造的高效能內容供應體系</p>
+
+    <div class="hero-stats" data-reveal>
+      <div class="stat"><b data-count="1000" data-suffix="+">0</b><span data-i18n="hero.stat1">LIVE OPERATOR SITES</span></div>
+      <div class="stat"><b data-count="300" data-suffix="+">0</b><span data-i18n="hero.stat2">GAMES SHIPPED</span></div>
+      <div class="stat"><b data-count="40" data-suffix="+">0</b><span data-i18n="hero.stat3">LANGUAGES</span></div>
+    </div>
+  </div>
+
+  <div class="hero-cards" id="heroCards"></div>
+</section>
+
+<!-- ═══════════ 03 · BRAND STATEMENT ═══════════ -->
+<section class="sec statement" id="about">
+  <div class="backdrop backdrop--down"></div>
+  <div class="glow glow--right"></div>
+  <i class="ring ring--l"></i><i class="ring ring--r"></i>
+
+  <div class="shell">
+    <p class="eyebrow" data-reveal><i class="rule"></i><span data-i18n="about.eyebrow">01 — WHO WE ARE</span></p>
+    <!-- 標題與面板同一列：面板進版面流，就不會在任何語言下壓到下面的分隔線 -->
+    <div class="head-row">
+    <h2 class="ghost" data-reveal>
+      <span class="gl gl--a" data-i18n="about.h1">MATH THAT WORKS</span>
+      <span class="gl gl--b" data-i18n="about.h2">ART THAT MOVES<i class="deco"></i></span>
+    </h2>
+    <!-- 右側空白處的遙測面板：離散階梯線＝數學，連續曲線＝美術，呼應標題語意 -->
+    <div class="viz" data-reveal aria-hidden="true">
+      <p class="viz-head"><i class="viz-dot"></i><span data-i18n="about.vizLabel">ENGINE TELEMETRY</span></p>
+      <div class="viz-plot">
+        <svg class="viz-svg" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g class="viz-grid"></g>
+          <g class="viz-run viz-run--math"><path/></g>
+          <g class="viz-run viz-run--art"><path/></g>
+        </svg>
+        <i class="viz-scan"></i>
+      </div>
+      <p class="viz-legend">
+        <span class="vg vg--math"><i></i><span data-i18n="about.vizMath">MATH · DISCRETE</span></span>
+        <span class="vg vg--art"><i></i><span data-i18n="about.vizArt">ART · CONTINUOUS</span></span>
+      </p>
+      <ul class="viz-reads">
+        <li><span data-i18n="about.viz1">ENGINE FPS</span><b data-viz="fps">60.0</b></li>
+        <li><span data-i18n="about.viz2">MODEL RTP</span><b data-viz="rtp">96.3%</b></li>
+        <li><span data-i18n="about.viz3">DELIVERY</span><b data-viz="lat">12ms</b></li>
+      </ul>
+    </div>
+    </div><!-- /.head-row -->
+
+    <hr class="hairline" data-reveal>
+    <div class="split">
+      <div class="split-l" data-reveal>
+        <p class="lead" data-i18n="about.lead">遊戲好不好玩，其實取決於三件事同時到位：數學模型、引擎效能、美術節奏。BeeBix 把這三件事綁在同一條時間軸上調校。</p>
+        <p class="muted" data-i18n="about.body">自研引擎、跨平台交付、營運端活動工具——一套走完的內容供應體系，服務全球市場的娛樂場品牌。</p>
+        <a class="btn" href="#why"><span data-i18n="about.cta">About BeeBix</span><i class="arw"></i></a>
+      </div>
+      <ul class="kv" id="capsList" data-reveal></ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 04 · MARQUEE BANNER ═══════════ -->
+<section class="sec banner" aria-label="Hot drops">
+  <div class="banner-sheen"></div>
+  <div class="banner-comb" aria-hidden="true"></div>
+  <div class="banner-comb--hot" aria-hidden="true"><i class="comb-run"></i></div>
+  <div class="banner-vignette"></div>
+
+  <div class="lane"><div class="lane-run" id="laneA" data-dir="1" data-speed="46"></div></div>
+
+  <div class="marquee marquee--banner">
+    <div class="marquee-run" data-speed="30">
+      <span><b data-i18n="banner.a">HOT DROPS</b> <img src="assets/logo/06_bolt_trim.svg" alt=""></span>
+      <span><b data-i18n="banner.b">BEST GAMES</b> <img src="assets/logo/06_bolt_trim.svg" alt=""></span>
+    </div>
+  </div>
+
+  <div class="lane"><div class="lane-run" id="laneB" data-dir="-1" data-speed="52"></div></div>
+
+  <!-- 蜜蜂用未切割的整張圖，動作全部作用在整體：不動刀就不會破圖，
+       而 CSS keyframes 的 0% 與 100% 相同，循環在數學上必然無縫 -->
+  <div class="banner-char" data-parallax="-24" aria-hidden="true">
+    <div class="bee">
+      <img class="bee-body" src="assets/gen-img/bee-robot.webp" alt="" decoding="async">
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 05 · FEATURED GAMES ═══════════ -->
+<section class="sec featured" id="games">
+  <div class="backdrop backdrop--up"></div>
+  <div class="glow glow--bottom"></div>
+
+  <div class="shell">
+    <p class="eyebrow" data-reveal><i class="rule"></i><span data-i18n="games.eyebrow">02 — PORTFOLIO</span></p>
+    <h2 class="ghost" data-reveal>
+      <span class="gl gl--a" data-i18n="games.h1">THE LINEUP</span>
+      <span class="gl gl--b" data-i18n="games.h2">THAT PERFORMS<i class="deco"></i></span>
+    </h2>
+    <div class="sec-intro" data-reveal>
+      <h3 data-i18n="games.sub">Certified player magnets</h3>
+      <p data-i18n="games.body">重製經典、原生新機制、跨題材聯名——每一款都先過留存與轉換的關卡，才會出現在這份清單上。</p>
+    </div>
+  </div>
+
+  <div class="arc" id="arc"><div class="arc-stage" id="arcStage"></div></div>
+  <div class="arc-dots" id="arcDots"></div>
+  <div class="shell center"><a class="btn" href="#offer"><span data-i18n="games.cta">View All Games</span><i class="arw"></i></a></div>
+</section>
+
+<!-- ═══════════ 06 · COMING SOON ═══════════ -->
+<section class="sec soon" id="soon">
+  <img class="soon-bg" src="assets/gen-img/roadmap-bg.webp" alt="">
+  <div class="soon-veil"></div>
+  <div class="glow glow--left"></div>
+
+  <div class="shell soon-grid">
+    <div class="soon-copy">
+      <p class="eyebrow eyebrow--light" data-reveal><i class="rule"></i><span data-i18n="soon.eyebrow">03 — ROADMAP</span></p>
+      <h2 class="split-title" data-reveal>
+        <span data-i18n="soon.h1">NEXT</span>
+        <em><span data-i18n="soon.h2">DROP</span><i class="deco deco--dark"></i></em>
+      </h2>
+      <h3 data-reveal data-i18n="soon.sub">Already in the oven</h3>
+      <p data-reveal data-i18n="soon.body">路線圖已經排到明年——新機制、新題材、新的爆點體驗，正在後台一款一款充電中。</p>
+      <a class="btn btn--light" href="#contact" data-reveal><span data-i18n="soon.cta">See the roadmap</span><i class="arw"></i></a>
+    </div>
+
+    <div class="soon-right">
+      <p class="sec-label sec-label--light" data-reveal><span data-i18n="soon.label">SHIPPING NEXT</span><i class="line"></i></p>
+      <div class="soon-cols" id="soonCols"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 07 · WHAT WE SHIP ═══════════ -->
+<section class="sec offer" id="offer">
+  <div class="backdrop backdrop--down"></div>
+  <div class="glow glow--left"></div>
+
+  <div class="marquee marquee--ghost">
+    <div class="marquee-run" data-speed="44">
+      <span><b data-i18n="offer.marquee">WHAT WE SHIP</b> <img src="assets/logo/06_bolt_trim.svg" alt=""></span>
+      <span><b data-i18n="offer.marquee">WHAT WE SHIP</b> <img src="assets/logo/06_bolt_trim.svg" alt=""></span>
+    </div>
+  </div>
+
+  <div class="shell offer-grid">
+    <div class="offer-left">
+      <p class="eyebrow" data-reveal><i class="rule"></i><span data-i18n="offer.eyebrow">04 — CAPABILITIES</span></p>
+      <ul class="offer-list" id="offerList"></ul>
+    </div>
+    <div class="offer-card" id="offerCard" data-reveal>
+      <img class="oc-bg" src="" alt="">
+      <img class="oc-char" src="" alt="">
+      <div class="oc-veil"></div>
+      <div class="oc-body">
+        <p id="ocText"></p>
+        <a class="btn btn--light" href="#games" id="ocCta"><span></span><i class="arw"></i></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 08 · STUDIOS ═══════════ -->
+<section class="sec studios" id="studios">
+  <div class="backdrop backdrop--up"></div>
+  <div class="glow glow--center"></div>
+
+  <div class="shell">
+    <div class="studios-card" data-reveal>
+      <img class="sc-bg" src="assets/gen-img/studios-bg.webp" alt="" data-parallax="18">
+      <div class="sc-veil"></div>
+      <div class="sc-body">
+        <p class="eyebrow eyebrow--light"><i class="rule"></i><span data-i18n="studios.eyebrow">05 — STUDIOS</span></p>
+        <h2 class="split-title">
+          <span data-i18n="studios.h1">IN-HOUSE</span>
+          <em><span data-i18n="studios.h2">FIREPOWER</span><i class="deco deco--dark"></i></em>
+        </h2>
+        <h3 data-i18n="studios.sub">Studios that set the pace</h3>
+        <p data-i18n="studios.body">多間自營工作室各據一種創作風格與市場焦點，再加上嚴選的第三方夥伴，共同撐起完整產品線。</p>
+        <a class="btn btn--light" href="#contact"><span data-i18n="studios.cta">View Studios</span><i class="arw"></i></a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ 09 · WHY CHOOSE ═══════════ -->
+<section class="sec why" id="why">
+  <div class="backdrop backdrop--down"></div>
+  <div class="glow glow--topright"></div>
+
+  <div class="shell">
+    <p class="eyebrow" data-reveal><i class="rule"></i><span data-i18n="why.eyebrow">06 — WHY BEEBIX</span></p>
+    <h2 class="ghost ghost--tight" data-reveal>
+      <span class="gl gl--a" data-i18n="why.h1">WHY CHOOSE</span>
+      <span class="gl gl--indent"><span data-i18n="why.h2">BEEBIX</span><i class="deco"></i></span>
+    </h2>
+    <hr class="hairline" data-reveal>
+    <div class="split">
+      <div class="split-l" data-reveal>
+        <p class="lead" data-i18n="why.lead">我們不只是一個名字，而是一組被驗證過的品質標準。</p>
+        <p class="muted" data-i18n="why.body">穩定的交付節奏、可預期的數學表現、扎實的營運支援——這三件事讓 BeeBix 成為合作夥伴長期押注的內容來源。</p>
+        <a class="btn btn--outline" href="#contact"><span data-i18n="why.cta">Discover Our Story</span><i class="arw"></i></a>
+      </div>
+      <ul class="kv kv--dot" id="proofList" data-reveal></ul>
+    </div>
+
+    <p class="sec-label" data-reveal><span data-i18n="why.numbers">BY THE NUMBERS</span><i class="line"></i></p>
+    <ul class="stats" id="statsList" data-reveal></ul>
+  </div>
+</section>
+
+<!-- ═══════════ 10 · CONTACT CTA ═══════════ -->
+<section class="sec cta" id="contact">
+  <div class="banner-sheen"></div>
+  <div class="banner-comb" aria-hidden="true"></div>
+  <div class="banner-comb--hot" aria-hidden="true"><i class="comb-run"></i></div>
+
+  <div class="shell">
+    <p class="eyebrow eyebrow--ink" data-reveal><i class="rule"></i><span data-i18n="cta.eyebrow">07 — LET’S TALK</span></p>
+    <div class="cta-grid">
+      <h2 class="cta-title" data-reveal>
+        <span data-i18n="cta.h1">LET’S MAKE</span>
+        <span><span data-i18n="cta.h2">SOMETHING LOUD</span><i class="deco deco--ink"></i></span>
+      </h2>
+      <ul class="cta-info" data-reveal>
+        <li><span data-i18n="cta.partnerships">PARTNERSHIPS</span><a href="mailto:partners@beebix.games">partners@beebix.games</a></li>
+        <li><span data-i18n="cta.press">PRESS</span><a href="mailto:press@beebix.games">press@beebix.games</a></li>
+        <li><span data-i18n="cta.cert">CERTIFICATION</span><b>MGA · UKGC · Curaçao</b></li>
+      </ul>
+    </div>
+    <hr class="hairline hairline--ink" data-reveal>
+    <p class="cta-sub" data-reveal data-i18n="cta.sub">想升級你的內容組合、開一條新產品線，或談一次長期合作——直接找人聊比較快。</p>
+    <a class="btn btn--dark btn--big" href="mailto:partners@beebix.games" data-reveal><span data-i18n="cta.book">Book a call</span><i class="arw"></i></a>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════ 11 · FOOTER ═══════════ -->
+<footer class="site-footer">
+  <div class="shell">
+    <hr class="hairline">
+    <div class="footer-grid">
+      <div class="f-brand">
+        <img class="f-logo" src="assets/logo/02_mono_white.svg" alt="BeeBix">
+        <p class="f-legal" data-i18n="foot.legal">本網站僅供展示用途，不提供任何真實金錢博弈服務。</p>
+        <p class="f-links"><a href="#" data-i18n="foot.privacy">Privacy Policy</a> · <a href="#" data-i18n="foot.terms">Terms of Use</a></p>
+        <p class="f-copy" data-i18n="foot.copy">© 2026 BeeBix. All rights reserved.</p>
+        <span class="f-18">18+</span>
+      </div>
+      <div class="f-col"><h4>BeeBix</h4><a href="#top" data-i18n="foot.home">Home</a><a href="#why">About</a><a href="#studios">Studios</a><a href="#soon">Rewards</a><a href="#soon">News</a><a href="#contact">Partner Hub</a></div>
+      <div class="f-col"><h4>Games</h4><a href="#games" data-i18n="foot.overview">Overview</a><a href="#offer">Slots</a><a href="#offer">Live Casino</a><a href="#offer">Instant &amp; Crash</a><a href="#offer" data-i18n="foot.jackpot">Jackpot Network</a></div>
+      <div class="f-col"><h4 data-i18n="foot.follow">Follow Us</h4>
+        <a href="#" class="f-soc">Instagram <i class="dot"></i></a>
+        <a href="#" class="f-soc">LinkedIn <i class="dot"></i></a>
+        <a href="#" class="f-soc">Telegram <i class="dot"></i></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/i18n.js?v=49"></script>
+<script src="assets/js/data.js?v=49"></script>
+<script src="assets/js/main.js?v=49"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+/* ═══════════════════════════════════════════════════════
+   自動生成 — 請勿手改
+   來源：Figma「BeeBix Web」變數集合（Default mode）
+   ═══════════════════════════════════════════════════════ */
+:root{
+  --yel:#FFC700;   --yel-d:#E0A800;  --yel-l:#FFE066;  --yel-tint:#2A2410;
+  --wht:#FFFFFF;
+  --ink:#0B0B0C;   --ink-2:#141518;  --ink-3:#1F2126;
+  --gry:#8A8A90;   --g-100:#141518;  --g-200:#202227;
+  --g-300:#3C3F47; --g-500:#8A8A90;
+
+  --s-page:#0B0B0C;      --s-dark:#141518;   --s-card:#1F2126;
+  --s-muted:#141518;     --s-accent:#FFC700; --s-accent-soft:#2A2410;
+
+  --t-primary:#FFFFFF;   --t-inverse:#FFFFFF; --t-muted:#8A8A90;
+  --t-ghost:#3C3F47;     --t-accent:#FFC700;  --t-on-accent:#0B0B0C;
+
+  --a-primary:#FFC700;   --a-hover:#FFE066;   --b-subtle:#202227;
+}
