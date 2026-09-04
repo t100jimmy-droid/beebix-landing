@@ -212,23 +212,24 @@ function reveals(){
 }
 
 /* ═════ 3 · HERO 進場編排（依序而非同時）═════ */
+/* 首屏進場：可重複播放（定時重播用），卡片滑入只在第一次 */
+const HERO_SEQ = [
+  ['.hero .eyebrow',      0], ['.hero-title .l1',   140], ['.hero-title .l2',   260],
+  ['.brand-plate',      420], ['.bolt-streak',      520], ['.hero-sub',         640],
+  ['.hero-stats',       740]
+];
+function playHero(){
+  HERO_SEQ.forEach(([sel]) => { const el = $(sel); if (el) el.classList.remove('in'); });
+  void document.body.offsetWidth;                          // 讓移除 .in 先生效，動畫才會重跑
+  HERO_SEQ.forEach(([sel, d]) => {
+    const el = $(sel); if (!el) return;
+    setTimeout(() => el.classList.add('in'), 260 + d);
+  });
+}
 function heroChoreo(){
   if (REDUCED) return;
-  const seq = [
-    ['.hero .eyebrow',      0],
-    ['.hero-title .l1',   140],
-    ['.hero-title .l2',   260],
-    ['.brand-plate',      420],
-    ['.bolt-streak',      520],
-    ['.hero-sub',         640],
-    ['.hero-stats',       740]
-  ];
-  seq.forEach(([sel, d]) => {
-    const el = $(sel);
-    if (!el) return;
-    setTimeout(() => { el.classList.add('in'); }, 260 + d);
-  });
-  // 卡片依序滑入
+  playHero();
+  // 卡片依序滑入（只在第一次載入）
   setTimeout(() => {
     $$('.hero-cards-run .hcard').forEach((c, i) => {
       c.style.transition = 'opacity .7s var(--e-out), transform .8s var(--e-out)';
@@ -765,22 +766,38 @@ function lineupMeta(){
 }
 
 /* ═════ 11 · 數字滾動 ═════ */
+/* 數字滾動：進入畫面就跑，離開再進來會再跑；另外每 14 秒定時重播（連同首屏進場） */
+const countUp = el => {
+  const to = +el.dataset.count, suf = el.dataset.suffix || '';
+  if (REDUCED){ el.textContent = to.toLocaleString() + suf; return; }
+  const t0 = performance.now(), D = 1600, token = (el.__ct = (el.__ct || 0) + 1);
+  const step = t => {
+    if (el.__ct !== token) return;                 // 被新一輪取代就停
+    const p = clamp((t - t0) / D, 0, 1);
+    const e2 = 1 - Math.pow(1 - p, 4);             // 更緩的收尾
+    el.textContent = Math.round(to * e2).toLocaleString() + suf;
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+};
 function counters(){
+  const inview = new Set();
   const io = new IntersectionObserver(es => es.forEach(e => {
-    if (!e.isIntersecting) return;
-    io.unobserve(e.target);
-    const el = e.target, to = +el.dataset.count, suf = el.dataset.suffix || '';
-    if (REDUCED){ el.textContent = to.toLocaleString() + suf; return; }
-    const t0 = performance.now(), D = 1600;
-    const step = t => {
-      const p = clamp((t - t0) / D, 0, 1);
-      const e2 = 1 - Math.pow(1 - p, 4);           // 更緩的收尾
-      el.textContent = Math.round(to * e2).toLocaleString() + suf;
-      if (p < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
+    if (e.isIntersecting){ if (!inview.has(e.target)){ inview.add(e.target); countUp(e.target); } }
+    else inview.delete(e.target);
   }), { threshold:.4 });
   $$('[data-count]').forEach(el => io.observe(el));
+
+  /* 定時重播：每 14 秒把看得見的數字重滾一次；首屏在畫面內時連進場動畫一起重播 */
+  if (REDUCED) return;
+  const hero = $('#hero');
+  const REPLAY_MS = 14000;
+  setInterval(() => {
+    if (document.hidden) return;
+    const heroOn = hero && hero.getBoundingClientRect().bottom > innerHeight * .35 && hero.getBoundingClientRect().top < innerHeight * .5;
+    if (heroOn) playHero();                        // 含 .hero-stats 的揭示；數字由下面重滾
+    inview.forEach(el => countUp(el));
+  }, REPLAY_MS);
 }
 
 /* ═════ 12 · 通用視差 ═════ */

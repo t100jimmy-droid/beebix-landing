@@ -118,7 +118,8 @@ hr{border:0; margin:0}
 /* 首頁吉祥物：放在品牌牌與右側數據之間的空檔（實測 x 660–1169 / y 300–560）。
    週期刻意跟橫幅那隻不同，兩隻不會同步擺動。 */
 .hero-bee{
-  position:absolute; z-index:3; right:320px; top:250px; width:320px; height:auto;
+  /* 以 .hero-inner（1240 內容框）為基準：右側數據欄在框右緣，蜜蜂拳頭到數字至少留 60px */
+  position:absolute; z-index:1; right:236px; top:-20px; width:320px; height:auto;
   max-width:none; pointer-events:auto; cursor:pointer;
   filter:drop-shadow(0 26px 46px rgba(0,0,0,.55));
   animation:heroBeeFloat 5.6s ease-in-out infinite;
@@ -131,8 +132,18 @@ hr{border:0; margin:0}
 }
 .hero-bee:hover{ filter:drop-shadow(0 26px 46px rgba(0,0,0,.55)) drop-shadow(0 0 30px rgba(255,199,0,.4)) }
 
-/* 版面一變窄，這塊空白就不存在了，放著只會擋到字 */
-@media (max-width:1180px){ .hero-bee{ display:none } }
+/* 1320–1440：數據欄還在右側絕對定位，蜜蜂再往左讓一點 */
+@media (max-width:1440px){ .hero-bee{ right:250px; width:300px } }
+/* ≤1180：進入版面流、排在最上面，頭部靠右、腳略微壓在大標後方（大標 z-index 較高） */
+@media (max-width:1180px){
+  .hero-bee{ position:relative; display:block; z-index:1; right:auto; top:auto;
+    width:min(62vw, 300px); margin:-12px -2vw -44px auto; pointer-events:none }
+}
+@media (max-width:720px){
+  .sec.hero{ padding-top:104px }        /* 比後面 1024 斷點的 .hero 規則優先 */
+  .hero-bee{ width:min(64vw, 250px); margin:-6px -3vw -38px auto }
+  .hero .eyebrow{ margin-bottom:10px }
+}
 @media (prefers-reduced-motion: reduce){ .hero-bee{ animation:none } }
 
 /* ═════════ 01 · NAV ═════════ */
