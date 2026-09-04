@@ -92,3 +92,11 @@ const STATS = [
   { n:150,  suffix:'+', label:'why.s3' },
   { n:300,  suffix:'+', label:'why.s4' }
 ];
+
+/* ── 聯絡方式（彈窗用）────────────────────────────────────
+   帳號先用佔位，之後換真的只改這裡。url 留空就只顯示「複製」，不顯示「開啟」。 */
+const CONTACTS = [
+  { k:'email', label:'cm.email', handle:'partners@beebix.games', url:'mailto:partners@beebix.games' },
+  { k:'tg',    label:'cm.tg',    handle:'@beebix_partners',      url:'' },
+  { k:'wa',    label:'cm.wa',    handle:'+66 00 000 0000',       url:'' }
+];

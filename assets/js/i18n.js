@@ -78,6 +78,10 @@ const I18N = {
   'games.body':     { zh:'重制经典、原生新机制、跨题材联名——每一款都先过留存与转换的关卡，才会出现在这份清单上。',
                       en:'Reimagined classics, native new mechanics, cross-theme collabs — every title clears our retention and conversion bar before it makes this list.',
                       th:'คลาสสิกที่รังสรรค์ใหม่ กลไกดั้งเดิม และการร่วมมือข้ามธีม — ทุกเกมต้องผ่านเกณฑ์การรักษาผู้เล่นและอัตราแปลงก่อนติดรายชื่อนี้' },
+  'games.lu1':      { zh:'精选阵容',   en:'FEATURED',    th:'ไลน์อัพ' },
+  'games.lu2':      { zh:'即将推出',   en:'COMING SOON', th:'เร็วๆ นี้' },
+  'games.lu3':      { zh:'游戏类型',   en:'CATEGORIES',  th:'ประเภทเกม' },
+  'games.luKey':    { zh:'类型图例',   en:'TYPE KEY',    th:'คีย์ประเภท' },
   'games.cta':      { zh:'查看全部游戏', en:'View All Games', th:'ดูเกมทั้งหมด' },
 
   /* ───── 06 即将上线 ───── */
@@ -192,15 +196,27 @@ const I18N = {
   'ui.arcLabel':    { zh:'精选游戏轮播，可用左右方向键切换',
                       en:'Featured games carousel, use arrow keys',
                       th:'สไลด์เกมแนะนำ ใช้ปุ่มลูกศรเพื่อเลื่อน' },
+  /* 聯絡彈窗 */
+  'cm.eyebrow':     { zh:'联系我们',   en:'GET IN TOUCH', th:'ติดต่อเรา' },
+  'cm.title':       { zh:'想聊聊？三条线都找得到我们', en:"Let's talk. Three ways to reach us.", th:'คุยกันได้ 3 ช่องทาง' },
+  'cm.sub':         { zh:'选一个最顺手的，或直接复制账号。', en:'Pick whichever is easiest, or copy the handle.', th:'เลือกช่องทางที่สะดวก หรือคัดลอกบัญชีได้เลย' },
+  'cm.re':          { zh:'关于',       en:'RE',          th:'เรื่อง' },
+  'cm.email':       { zh:'电子邮件',   en:'EMAIL',       th:'อีเมล' },
+  'cm.tg':          { zh:'TELEGRAM',   en:'TELEGRAM',    th:'TELEGRAM' },
+  'cm.wa':          { zh:'WHATSAPP',   en:'WHATSAPP',    th:'WHATSAPP' },
+  'cm.copy':        { zh:'复制',       en:'COPY',        th:'คัดลอก' },
+  'cm.copied':      { zh:'已复制',     en:'COPIED',      th:'คัดลอกแล้ว' },
+  'cm.open':        { zh:'打开',       en:'OPEN',        th:'เปิด' },
+  'cm.close':       { zh:'关闭',       en:'CLOSE',       th:'ปิด' },
   'ui.gameNo':      { zh:'第 {n} 款游戏', en:'Game {n}',  th:'เกมที่ {n}' },
 
   /* ── 區塊 01 右側的遙測面板（示意數據，非真實指標）── */
-  'about.vizLabel': { zh:'引擎实时读数',   en:'ENGINE TELEMETRY', th:'ข้อมูลเรียลไทม์' },
-  'about.viz1':     { zh:'引擎帧率',       en:'ENGINE FPS',       th:'เฟรมเรต' },
-  'about.viz2':     { zh:'数学模型',       en:'MODEL RTP',        th:'โมเดลคณิต' },
-  'about.viz3':     { zh:'交付延迟',       en:'DELIVERY',         th:'ความหน่วง' },
-  'about.vizMath':  { zh:'数学 · 离散',    en:'MATH · DISCRETE',  th:'คณิต · ขั้น' },
-  'about.vizArt':   { zh:'美术 · 连续',    en:'ART · CONTINUOUS', th:'อาร์ต · ลื่นไหล' },
+  'about.vizLabel': { zh:'情绪 × 波动',    en:'EMOTION × VOLATILITY', th:'อารมณ์ × ความผันผวน' },
+  'about.viz1':     { zh:'命中时刻',       en:'HIT MOMENTS',      th:'ช่วงเวลาฮิต' },
+  'about.viz2':     { zh:'情绪峰值',       en:'EMOTION PEAK',     th:'อารมณ์พีค' },
+  'about.viz3':     { zh:'波动指数',       en:'VOLATILITY',       th:'ดัชนีผันผวน' },
+  'about.vizMath':  { zh:'系统波动',       en:'SYSTEM VOLATILITY', th:'ความผันผวนของระบบ' },
+  'about.vizArt':   { zh:'玩家情绪',       en:'PLAYER EMOTION',   th:'อารมณ์ผู้เล่น' },
 
   /* ── Hero 方格觸碰時浮現的字（50 組，三語連動）── */
   'word.1':  { zh:'开玩', en:'PLAY', th:'เล่น' },

@@ -31,6 +31,8 @@ addEventListener('scroll', () => {
 setInterval(() => { if (Math.abs(velocity) > .1) { velocity *= .85; tick(); } }, 60);
 
 let relabelCells = () => {};   // 由 cellGrid() 指派
+let arcGoTo   = () => {};      // 由 arc() 指派：把第 i 張卡轉到正中央
+let offerShow = () => {};      // 由 offer() 指派：切到第 i 個方案
 
 /* ═════ 可重建區塊的清理登記 ═════
    切語系會重跑 arc()/soon()，舊的計時器／監聽器／onFrame 必須先收掉，否則每切一次疊一組。 */
@@ -73,6 +75,7 @@ const applyI18n = () => {
     b.setAttribute('aria-selected', String(b.dataset.lang === LANG)));
   const tt = $('.to-top'); if (tt) tt.setAttribute('aria-label', t('ui.toTop'));
   const bg = $('.burger');  if (bg) bg.setAttribute('aria-label', t('ui.menu'));
+  const cx = $('.cm-x');    if (cx) cx.setAttribute('aria-label', t('cm.close'));
   const hint = $('.drag-hint'); if (hint) hint.textContent = t(COARSE ? 'ui.swipe' : 'ui.drag');
 };
 
@@ -129,26 +132,49 @@ function nav(){
     b.parentElement.classList.toggle('open', !open);
   }));
 
-  $$('a[href^="#"]').forEach(a => a.addEventListener('click', e => {
+  const HEADER_GAP = 96;                       // 固定導覽列高度 + 呼吸空間
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
     const id = a.getAttribute('href');
-    if (id.length < 2) return;
+    if (id === '#'){ e.preventDefault(); return; }   // 佔位連結：不要跳回頁頂
     const t = $(id);
     if (!t) return;
     e.preventDefault();
-    scrollTo({ top: t.getBoundingClientRect().top + scrollY - 96, behavior: REDUCED ? 'auto' : 'smooth' });
-  }));
+    scrollTo({ top: t.getBoundingClientRect().top + scrollY - HEADER_GAP, behavior: REDUCED ? 'auto' : 'smooth' });
+    if (location.hash !== id) history.pushState(null, '', id);   // 讓上一頁／分享網址有意義
+    // 深連結：捲到區塊後，把對應的卡片／方案帶到前面
+    if (a.dataset.arc   !== undefined) arcGoTo(+a.dataset.arc);
+    if (a.dataset.offer !== undefined) offerShow(+a.dataset.offer);
+  });
+  // 用上一頁／下一頁回到某個 hash 時也對齊到導覽列下方
+  addEventListener('popstate', () => {
+    const t = location.hash && $(location.hash);
+    if (t) scrollTo({ top: t.getBoundingClientRect().top + scrollY - HEADER_GAP, behavior:'auto' });
+  });
+  addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    document.body.classList.remove('nav-open');
+    $$('.has-menu.open').forEach(li => { li.classList.remove('open'); $('button', li).setAttribute('aria-expanded', 'false'); });
+  });
+  addEventListener('click', e => {
+    if (!e.target.closest('.has-menu')) $$('.has-menu.open').forEach(li => {
+      li.classList.remove('open'); $('button', li).setAttribute('aria-expanded', 'false'); });
+  });
 
   /* scrollspy：標示目前所在區塊 */
   const links = $$('.nav-links a[href^="#"]');
-  const targets = links.map(a => ({ a, el: $(a.getAttribute('href')) })).filter(x => x.el);
-  if (targets.length) onFrame.push(y => {
+  const sections = $$('main > section[id]');
+  const parents  = $$('.nav-links .has-menu > button');
+  if (sections.length) onFrame.push(y => {
     const mid = y + innerHeight * .35;
-    let cur = null;
-    for (const t of targets) {
-      const top = t.el.getBoundingClientRect().top + y;
-      if (top <= mid) cur = t.a;
-    }
-    links.forEach(a => a.classList.toggle('current', a === cur));
+    let sec = null;
+    for (const s of sections){ if (s.getBoundingClientRect().top + y <= mid) sec = s; }
+    const id = sec ? '#' + sec.id : null;
+    const hit = id ? links.find(a => a.getAttribute('href') === id) : null;
+    links.forEach(a => a.classList.toggle('current', a === hit));
+    // 子選單裡的連結命中時，點亮它的父按鈕（Games / Discover）
+    parents.forEach(b => b.classList.toggle('current', !!hit && b.parentElement.contains(hit)));
   });
 }
 
@@ -230,13 +256,22 @@ function marquees(){
   // 速度隨捲動起伏會讓文字讀起來在飄；穩定的等速才像正常的 ticker。
 }
 
+
+/* 依標題決定卡片該去哪：輪播有 → 作品區並轉到那張；Offer 有 → 方案區並切到那項 */
+const linkFor = title => FEATURED.some(g => g.t === title) ? '#games'
+                       : OFFER.some(o => o.t === title)    ? '#offer' : '#games';
+const dataFor = title => {
+  const i = FEATURED.findIndex(g => g.t === title); if (i >= 0) return ` data-arc="${i}"`;
+  const j = OFFER.findIndex(o => o.t === title);    if (j >= 0) return ` data-offer="${j}"`;
+  return '';
+};
 /* ═════ 5 · HERO 卡片 ═════ */
 function hero(){
   const viewport = $('#heroCards');
   if (!viewport) return;
 
   const card = g => `
-    <a class="hcard" href="#games" aria-label="${g.t}">
+    <a class="hcard" href="${linkFor(g.t)}"${dataFor(g.t)} aria-label="${g.t}">
       <div class="hcard-media spot">
         <img class="bg" src="${g.bg}" alt="" loading="lazy">
         <img class="hcard-char" src="${g.ch}" alt="" loading="lazy">
@@ -314,7 +349,7 @@ function arc(){
   $$('.drag-hint, .arc-nav', el).forEach(n => n.remove());
 
   stage.innerHTML = FEATURED.map(g => `
-    <a class="gcard" href="#games" aria-label="${g.t}">
+    <a class="gcard" href="#games" data-i="${FEATURED.indexOf(g)}" aria-label="${g.t}">
       <div class="gcard-in spot">
         <img src="${g.img}" alt="" loading="eager" decoding="async">
         <span class="gcard-tag">${t(g.tag)}</span>
@@ -376,15 +411,24 @@ function arc(){
   };
   const kick = () => { if (!raf) raf = requestAnimationFrame(paint); };
   const go = v => { goal = v; kick(); };
+  arcGoTo = i => { pause(6000); go(goal + wrap(i - goal)); };
+  listen('arc', stage, 'click', e => {
+    const c = e.target.closest('.gcard'); if (!c) return;
+    e.preventDefault(); e.stopPropagation();        // 卡片本身不再捲動頁面
+    if (moved) return;                              // 拖曳結束的那一下不算點擊
+    if (!c.classList.contains('is-active')) arcGoTo(+c.dataset.i);
+  }, true);
 
   const arcPx = () => (RADIUS * STEP * Math.PI) / 180;
 
+  let moved = false;                            // 這一次按下後是否真的拖過（> 6px）
   listen('arc', el, 'pointerdown', e => {
-    dragging = true; startX = e.clientX; startGoal = goal;
+    dragging = true; startX = e.clientX; startGoal = goal; moved = false; el.classList.remove('dragged');
     el.classList.add('drag', 'touched'); el.setPointerCapture(e.pointerId);
   });
   listen('arc', el, 'pointermove', e => {
     if (!dragging) return;
+    if (Math.abs(e.clientX - startX) > 6){ moved = true; el.classList.add('dragged'); }
     go(startGoal - (e.clientX - startX) / arcPx());
   });
   const end = e => {
@@ -596,6 +640,7 @@ function offer(){
     }, REDUCED ? 0 : 240);
   };
 
+  offerShow = show;
   btns.forEach((b, i) => {
     b.addEventListener('click', () => show(i));
     // hover intent：停留 90ms 才切換，避免滑過閃爍
@@ -634,6 +679,89 @@ function lists(){
     `<li class="spot${s.hero ? ' is-hero' : ''}">`
     + `<b data-count="${s.n}" data-suffix="${s.suffix}">${s.n.toLocaleString()}${s.suffix}</b>`
     + `<span>${t(s.label)}</span></li>`).join('');
+}
+
+/* ═════ 10a · 聯絡彈窗：行動型連結一律開這裡；區塊導覽不受影響 ═════ */
+const CM_TRIGGER = '.btn, .btn-ghost, a[href^="mailto:"], a[href="#"], .hcard, .gcard.is-active';
+const CM_ICON = {
+  email:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 7l9 6 9-6"/></svg>',
+  tg:   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4L3 11l6 2.5L11 20l3-4 5 3z"/><path d="M9 13.5l10-8"/></svg>',
+  wa:   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 0 0-7.7 13.6L3 21l4.5-1.2A9 9 0 1 0 12 3z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1.2-1.4-1.9-.9-.9.8a4 4 0 0 1-2.3-2.3l.8-.9-.9-1.9z"/></svg>'
+};
+function contactModal(){
+  const cm = $('#contactModal'); if (!cm) return;
+  const panel = $('.cm-panel', cm), list = $('#cmList'), re = $('#cmRe'), reLabel = $('#cmReLabel');
+  list.innerHTML = CONTACTS.map(c => `
+    <li class="cm-row">
+      <span class="cm-ico" aria-hidden="true">${CM_ICON[c.k] || ''}</span>
+      <span class="cm-txt"><span class="cm-k" data-i18n="${c.label}">${t(c.label)}</span><b class="cm-v">${c.handle}</b></span>
+      <span class="cm-act">
+        ${c.url ? `<a class="cm-btn cm-btn--ghost" href="${c.url}" target="_blank" rel="noopener" data-i18n="cm.open">${t('cm.open')}</a>` : ''}
+        <button class="cm-btn" type="button" data-copy="${c.handle}"><span data-i18n="cm.copy">${t('cm.copy')}</span></button>
+      </span>
+    </li>`).join('');
+
+  let opener = null, closeTimer = 0;
+  const focusables = () => $$('a[href], button:not([disabled])', panel);
+  const open = label => {
+    opener = document.activeElement;
+    if (label){ reLabel.textContent = label; re.hidden = false; } else re.hidden = true;
+    clearTimeout(closeTimer);
+    cm.hidden = false; document.documentElement.classList.add('cm-open');
+    requestAnimationFrame(() => { cm.classList.add('on'); (focusables()[0] || panel).focus(); });
+  };
+  const close = () => {
+    if (cm.hidden) return;
+    cm.classList.remove('on'); document.documentElement.classList.remove('cm-open');
+    closeTimer = setTimeout(() => { cm.hidden = true; if (opener && opener.focus) opener.focus(); }, REDUCED ? 0 : 320);
+  };
+
+  // 觸發：任何行動型連結（彈窗內部的按鈕除外）。用 capture 搶在錨點捲動處理之前。
+  document.addEventListener('click', e => {
+    if (e.target.closest('.cm')) return;
+    const trig = e.target.closest(CM_TRIGGER); if (!trig) return;
+    if (trig.closest('.arc.dragged')) return;            // 拖曳結束落在中央卡上，不算點擊
+    e.preventDefault(); e.stopPropagation();
+    const label = (trig.getAttribute('aria-label') || trig.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 40);
+    open(label);
+  }, true);
+
+  cm.addEventListener('click', e => { if (e.target.closest('[data-cm-close]')) close(); });
+  addEventListener('keydown', e => {
+    if (cm.hidden) return;
+    if (e.key === 'Escape'){ e.preventDefault(); close(); return; }
+    if (e.key === 'Tab'){                                  // 焦點只在彈窗內循環
+      const f = focusables(); if (!f.length) return;
+      const i = f.indexOf(document.activeElement);
+      if (e.shiftKey && i <= 0){ e.preventDefault(); f[f.length - 1].focus(); }
+      else if (!e.shiftKey && i === f.length - 1){ e.preventDefault(); f[0].focus(); }
+    }
+  });
+
+  // 複製帳號（clipboard API 失敗時退回 execCommand）
+  list.addEventListener('click', async e => {
+    const b = e.target.closest('[data-copy]'); if (!b) return;
+    const txt = b.dataset.copy; let ok = false;
+    try { await navigator.clipboard.writeText(txt); ok = true; }
+    catch {
+      const ta = document.createElement('textarea'); ta.value = txt;
+      ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select();
+      try { ok = document.execCommand('copy'); } catch {} ta.remove();
+    }
+    if (!ok) return;
+    const span = $('span', b); span.textContent = t('cm.copied'); b.classList.add('is-done');
+    setTimeout(() => { span.textContent = t('cm.copy'); b.classList.remove('is-done'); }, 1600);
+  });
+}
+
+/* ═════ 10b · 遊戲區陣容速覽（數字全部由資料算出，不寫死）═════ */
+function lineupMeta(){
+  const box = $('.lineup'); if (!box) return;
+  const types = new Set(HERO.map(h => h.tag)).size;
+  const vals = [FEATURED.length, SOON.length, types];
+  $$('.lineup-reads b', box).forEach((b, i) => {
+    b.dataset.count = vals[i]; b.textContent = vals[i].toLocaleString();
+  });
 }
 
 /* ═════ 11 · 數字滾動 ═════ */
@@ -768,23 +896,28 @@ function cellGrid(){
   const build = () => {
     const w = host.clientWidth, h = host.clientHeight;
     if (!w || !h) return;
-    // 目標格距 ~58px（框 54 + 間隙 4），並確保總數至少 240 格
-    let gap = 58;
-    do {
-      cols = Math.max(8, Math.round(w / gap));
-      rows = Math.max(6, Math.round(h / gap));
-      if (cols * rows >= 240) break;
-      gap -= 6;
-    } while (gap > 34);
 
-    grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-    grid.style.gridTemplateRows    = `repeat(${rows}, 1fr)`;
+    /* 蜂窩排列（尖頂六角形）—— 幾何與 assets/img/honeycomb.svg 對齊：
+       寬 W、高 H = W·2/√3，水平間距 W+gap，垂直間距 0.75H+gap，奇數列右移半格。
+       交錯列沒辦法用 CSS grid 表達，所以逐格絕對定位。 */
+    const small = w <= 720;
+    const W  = small ? 36 : 54;
+    const H  = Math.round(W * 2 / Math.sqrt(3));      // 36→42, 54→62
+    const PX = W + (small ? 3 : 4);                   // 39 / 58
+    const PY = Math.round(H * 0.75) + (small ? 3 : 4);// 35 / 51
+
+    cols = Math.ceil(w / PX) + 1;                     // +1 讓奇數列右移後仍蓋滿右緣
+    rows = Math.ceil(h / PY) + 1;
+    const x0 = (w - cols * PX) / 2;                   // 置中，左右溢出量相同
+    const y0 = (h - rows * PY) / 2;
 
     const frag = document.createDocumentFragment();
     for (let r = 0; r < rows; r++){
       for (let c = 0; c < cols; c++){
         const cell = document.createElement('span');
         cell.className = 'cell';
+        cell.style.left = (x0 + c * PX + (r & 1 ? PX / 2 : 0) - W / 2 + PX / 2).toFixed(1) + 'px';
+        cell.style.top  = (y0 + r * PY - H / 2 + PY / 2).toFixed(1) + 'px';
         // 兩道波：位移走正對角、明暗走反對角，交錯出有機起伏
         // 負值 → 一載入就已在進行中，不會全部從同一相位開始
         cell.style.setProperty('--d1', `-${((c + r) * 0.09).toFixed(2)}s`);
@@ -908,110 +1041,187 @@ function cellGrid(){
    數字是示意值，不是真實指標。 */
 function aboutViz(){
   const viz = $('.viz'); if (!viz) return;
-  const plot = $('.viz-plot', viz), svg = $('.viz-svg', viz);
-  const gGrid = $('.viz-grid', svg);
-  const pArt  = $('.viz-run--art path', svg), pMath = $('.viz-run--math path', svg);
-  const gArt  = $('.viz-run--art', svg),      gMath = $('.viz-run--math', svg);
-  if (!pArt || !pMath) return;
+  const plot = $('.viz-plot', viz), cv = $('.viz-cv', viz);
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  const YEL = '#FFC700', GRY = '#9A9AA2';
 
-  const H = 80;                       // 壓低高度，面板底部才不會蓋到區塊的分隔線
-  let anims = [];
+  /* ── 畫布尺寸（跟語言寬度連動）── */
+  let W = 0, H = 0;
+  const size = () => {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    W = plot.clientWidth; H = plot.clientHeight;
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  };
+  size();
+  new ResizeObserver(() => { size(); prime(); if (REDUCED) draw(clock); }).observe(plot);
 
-  // 連續：兩個成整數倍的正弦疊加，位移一個 w 剛好走完整數個週期
-  const smooth = (W, P, amp, cy) => {
-    let d = '';
-    for (let x = 0; x <= W; x += 4){
-      const y = cy
-        + Math.sin((x / P) * Math.PI * 2) * amp
-        + Math.sin((x / (P / 3)) * Math.PI * 2) * amp * 0.30;
-      d += (x ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+  /* ── 兩種物理，各自的節奏 ──
+     A 彈跳球：重力 + 落地反彈（能量每次打八折），彈不動了就補一腳 → 弧線一次比一次矮，再突然拉高
+     B 彈簧  ：欠阻尼振盪 a = -k·x - c·v，衰到快停時再激發一次 → 正弦慢慢收斂，再猛地張開 */
+  const A = { y: 1, v: 0 };                       // 0 = 地面, 1 = 頂
+  const B = { x: 0, v: 5.2 };                     // 位移（-1..1）
+  const G = 4.6, REST = 0.80, KICK = 3.05;        // 重力／反彈係數／補力初速（單位：高度/秒）
+  const K = 21, C = 0.62, SPRING_KICK = 5.2;
+  const stepA = dt => {
+    A.v -= G * dt; A.y += A.v * dt;
+    if (A.y <= 0){ A.y = 0; A.v = -A.v * REST; if (A.v < 0.9) A.v = KICK; }
+    if (A.y > 1){ A.y = 1; A.v = -Math.abs(A.v) * 0.5; }
+  };
+  const stepB = dt => {
+    const acc = -K * B.x - C * B.v;
+    B.v += acc * dt; B.x += B.v * dt;
+    if (Math.abs(B.x) < 0.05 && Math.abs(B.v) < 0.45) B.v = SPRING_KICK * (B.v < 0 ? -1 : 1);
+  };
+  const PAD = 10;
+  const yA = () => H - PAD - A.y * (H - PAD * 2);
+  const yB = () => H / 2 - B.x * (H * 0.33);
+
+  /* ── 軌跡：線頭固定在 70% 寬，舊樣本往左流 ── */
+  const SPEED = 64;                               // px/s
+  const headX = () => W * 0.70;
+  const trA = [], trB = [];                       // {t, y}
+  const keep = () => headX() / SPEED + 0.6;       // 線頭到左緣需要的秒數（多留一點給淡出區）
+
+  /* ── 粒子 ── */
+  const sparks = []; const rings = []; const hits = [];     // hits：留在軌跡上的命中標記 {t, y}
+  let hitCount = 0, emoPeak = 0;
+  const rd = { hit: $('[data-viz="hit"]', viz), emo: $('[data-viz="emo"]', viz), vol: $('[data-viz="vol"]', viz) };
+  const burst = (x, y, big) => {
+    const n = big ? 22 : 11;
+    for (let i = 0; i < n; i++){
+      const a = Math.random() * Math.PI * 2, sp = (big ? 90 : 60) * (0.35 + Math.random());
+      sparks.push({ x, y, vx: Math.cos(a) * sp - SPEED * 0.6, vy: Math.sin(a) * sp - 20,
+                    life: 0, ttl: 0.55 + Math.random() * 0.5, r: big ? 1.6 + Math.random() * 1.4 : 1 + Math.random(),
+                    c: Math.random() < 0.72 ? YEL : '#FFFFFF' });
     }
-    return d;
+    rings.push({ x, y, life: 0, ttl: big ? 0.6 : 0.42, big });
   };
 
-  // 離散：把同一條訊號量化成階梯，只走水平／垂直線段
-  const stepped = (W, P, amp, cy, step) => {
-    let d = '', prev = null;
-    for (let x = 0; x <= W + 0.001; x += step){
-      const raw = Math.sin((x / P) * Math.PI * 2) * amp
-                + Math.sin((x / (P / 2)) * Math.PI * 2) * amp * 0.42;
-      const y = +(cy + Math.round(raw / 7) * 7).toFixed(1);
-      if (prev === null) d += `M${x} ${y}`;
-      else d += `L${x} ${prev}L${x} ${y}`;
-      prev = y;
-    }
-    return d + `L${W.toFixed(1)} ${prev}`;
-  };
-
-  const build = () => {
-    anims.forEach(a => a.cancel()); anims = [];
-    const w = Math.round(plot.clientWidth);
-    if (!w) return;
-    svg.setAttribute('viewBox', `0 0 ${w} ${H}`);
-    svg.setAttribute('width', w);
-    svg.setAttribute('height', H);
-
-    // 基準格線
-    gGrid.replaceChildren();
-    [0.25, 0.5, 0.75].forEach(f => {
-      const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-      ln.setAttribute('x1', 0); ln.setAttribute('x2', w);
-      ln.setAttribute('y1', (H * f).toFixed(1)); ln.setAttribute('y2', (H * f).toFixed(1));
-      gGrid.appendChild(ln);
-    });
-
-    // 位移距離 D = P*2；所有週期與階寬都必須整除 D，否則接回原點時會跳一下
-    const P = Math.max(90, w / 2);       // 主週期＝半個面板寬
-    const W = P * 4;                     // 畫四個週期，位移一半就無縫
-    pArt.setAttribute('d',  smooth(W, P, H * 0.20, H * 0.52));          // D/P=2, D/(P/3)=6
-    pMath.setAttribute('d', stepped(W, P / 2, H * 0.16, H * 0.48, P / 16)); // D/(P/2)=4, D/(P/16)=32
-
-    if (REDUCED) return;                 // 減少動態：畫出來但不跑
-    const run = (g, dist, ms) => {
-      const a = g.animate(
-        [{ transform:'translateX(0)' }, { transform:`translateX(${-dist}px)` }],
-        { duration: ms, iterations: Infinity, easing:'linear' });
-      anims.push(a); return a;
-    };
-    run(gArt,  P * 2, 9000);             // 位移兩個週期 → 無縫
-    run(gMath, P * 2, 13500);            // 不同速度，兩條線才不會黏在一起
-  };
-
-  build();
-  // 面板寬度會因語言而變（中／泰 540、英 370），用 ResizeObserver 才抓得到
-  let rt = 0, lastW = 0;
-  new ResizeObserver(es => {
-    const w = Math.round(es[0].contentRect.width);
-    if (w === lastW) return;
-    lastW = w;
-    clearTimeout(rt); rt = setTimeout(build, 160);
-  }).observe(plot);
-
-  /* 示意讀數：小幅隨機游走，看起來像在跳但不會亂飄 */
-  const reads = [
-    { el: $('[data-viz="fps"]', viz), v: 60.0, lo: 59.4, hi: 60.0, d: 0.22, fmt: v => v.toFixed(1) },
-    { el: $('[data-viz="rtp"]', viz), v: 96.3, lo: 96.0, hi: 96.6, d: 0.09, fmt: v => v.toFixed(1) + '%' },
-    { el: $('[data-viz="lat"]', viz), v: 12,   lo: 9,    hi: 16,   d: 1.1,  fmt: v => Math.round(v) + 'ms' }
-  ].filter(r => r.el);
-  if (REDUCED || !reads.length) return;
-
-  let visible = false;
-  new IntersectionObserver(es => es.forEach(e => { visible = e.isIntersecting; }),
+  let last = 0, prevSign = 0, lastCross = -1, visible = false, raf = 0;
+  let clock = 0, primed = false;                 // 模擬時鐘（ms）；primed＝已用真實寬度預跑過
+  new IntersectionObserver(es => es.forEach(e => { visible = e.isIntersecting; if (visible) kick(); }),
     { threshold: 0 }).observe(viz);
 
-  setInterval(() => {
-    if (!visible || document.hidden) return;       // 看不到就不動，不浪費
-    for (const r of reads){
-      r.v = clamp(r.v + (Math.random() - 0.5) * 2 * r.d, r.lo, r.hi);
-      const next = r.fmt(r.v);
-      if (r.el.textContent !== next){
-        r.el.textContent = next;
-        r.el.classList.remove('tick');
-        void r.el.offsetWidth;                     // 重啟閃動動畫
-        r.el.classList.add('tick');
+  const draw = now => {
+    if (!W || !H) return;
+    ctx.clearRect(0, 0, W, H);
+    const hx = headX();
+    // 背景淡網格：跟著軌跡往左流，有「時間在走」的感覺
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,.055)'; ctx.lineWidth = 1; ctx.setLineDash([2, 6]);
+    const gx = 44, off = (now / 1000 * SPEED) % gx;
+    for (let x = -off; x <= W; x += gx){ ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    ctx.setLineDash([]);
+    ctx.strokeStyle = 'rgba(255,255,255,.07)';
+    [0.25, 0.5, 0.75].forEach(f => { ctx.beginPath(); ctx.moveTo(0, H * f); ctx.lineTo(W, H * f); ctx.stroke(); });
+    ctx.restore();
+
+    const path = (tr, style) => {
+      ctx.save(); ctx.beginPath();
+      let first = true;
+      for (const s of tr){
+        const x = hx - (now - s.t) / 1000 * SPEED;
+        if (x < -4) continue;
+        if (first){ ctx.moveTo(x, s.y); first = false; } else ctx.lineTo(x, s.y);
       }
+      style(); ctx.stroke(); ctx.restore();
+    };
+    // 灰：虛線（離散）
+    path(trA, () => { ctx.strokeStyle = GRY; ctx.lineWidth = 1.4; ctx.globalAlpha = .75; ctx.setLineDash([4, 5]); ctx.lineJoin = 'round'; });
+    // 黃：實線＋光暈（連續）
+    path(trB, () => { ctx.strokeStyle = YEL; ctx.lineWidth = 2.2; ctx.lineJoin = 'round'; ctx.shadowColor = 'rgba(255,199,0,.55)'; ctx.shadowBlur = 10; });
+
+    // 線頭光點
+    const ya = trA.length ? trA[trA.length - 1].y : yA(), yb = trB.length ? trB[trB.length - 1].y : yB();
+    ctx.save();
+    ctx.fillStyle = GRY; ctx.beginPath(); ctx.arc(hx, ya, 2.2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = YEL; ctx.shadowColor = YEL; ctx.shadowBlur = 12; ctx.beginPath(); ctx.arc(hx, yb, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+
+    // 命中標記：留在交叉點上、跟著軌跡往左流、越舊越淡
+    for (const h of hits){
+      const x = hx - (now - h.t) / 1000 * SPEED; if (x < -6) continue;
+      const age = (now - h.t) / 1000, k = Math.max(0.18, 1 - age / 7);
+      ctx.save(); ctx.globalAlpha = k; ctx.strokeStyle = YEL; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.arc(x, h.y, 3.2, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,199,0,.35)'; ctx.beginPath(); ctx.arc(x, h.y, 1.4, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
     }
-  }, 1100);
+    // 粒子與環
+    for (const p of sparks){
+      const k = 1 - p.life / p.ttl; ctx.globalAlpha = Math.max(0, k);
+      ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * (0.5 + k * 0.5), 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    for (const r of rings){
+      const k = r.life / r.ttl; ctx.globalAlpha = (1 - k) * 0.9;
+      ctx.strokeStyle = YEL; ctx.lineWidth = r.big ? 1.6 : 1.1;
+      ctx.beginPath(); ctx.arc(r.x, r.y, 3 + k * (r.big ? 26 : 16), 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  };
+
+  const setRead = (el, txt) => {
+    if (!el || el.textContent === txt) return;
+    el.textContent = txt; el.classList.remove('tick'); void el.offsetWidth; el.classList.add('tick');
+  };
+  const step = (now, fixedDt) => {
+    let dt = fixedDt != null ? fixedDt : (last ? (now - last) / 1000 : 1 / 60); last = now;
+    dt = Math.min(dt, 0.05);
+    clock += dt * 1000;
+    stepA(dt); stepB(dt);
+    const a = yA(), b = yB();
+    trA.push({ t: clock, y: a }); trB.push({ t: clock, y: b });
+    const cut = clock - keep() * 1000;
+    while (trA.length && trA[0].t < cut) trA.shift();
+    while (trB.length && trB[0].t < cut) trB.shift();
+    while (hits.length && hits[0].t < cut) hits.shift();
+    emoPeak = Math.max(Math.abs(B.x), emoPeak * 0.985);   // 情緒峰值：慢慢回落的包絡
+    if (fixedDt == null && (clock - (step.lastRead || 0)) > 160){
+      step.lastRead = clock;
+      setRead(rd.hit, String(hitCount));
+      setRead(rd.emo, Math.round(Math.min(1, emoPeak) * 100) + '%');
+      setRead(rd.vol, Math.round(A.y * 100) + '%');
+    }
+
+    // 交叉偵測：兩條線頭的高低關係翻轉的那一幀就是交叉瞬間
+    const sign = Math.sign(a - b);
+    if (prevSign && sign && sign !== prevSign && clock - lastCross > 420){
+      lastCross = clock;
+      const y = (a + b) / 2;
+      burst(headX(), y, Math.abs(y - H / 2) < H * 0.12);   // 在正中央交會＝「完美交叉」，放大招
+      hits.push({ t: clock, y }); hitCount++;
+      cv.dataset.cross = String(hitCount);
+    }
+    prevSign = sign;
+
+    // 粒子物理：微重力、阻力、跟著軌跡往左飄
+    for (const p of sparks){ p.life += dt; p.vy += 110 * dt; p.vx *= 0.985; p.vy *= 0.985; p.x += p.vx * dt; p.y += p.vy * dt; }
+    for (let i = sparks.length - 1; i >= 0; i--) if (sparks[i].life >= sparks[i].ttl) sparks.splice(i, 1);
+    for (const r of rings) r.life += dt;
+    for (let i = rings.length - 1; i >= 0; i--) if (rings[i].life >= rings[i].ttl) rings.splice(i, 1);
+    draw(clock);
+  };
+
+  const preroll = () => {
+    for (let t = 0; t < keep(); t += 1 / 60) step(0, 1 / 60);
+    sparks.length = 0; rings.length = 0; last = 0;
+  };
+  const prime = () => { if (!primed && W > 0){ primed = true; preroll(); if (REDUCED) draw(clock); } };
+  const loop = now => {
+    raf = 0;
+    if (!visible || document.hidden) { last = 0; return; }
+    if (!primed){ size(); prime(); if (!primed){ raf = requestAnimationFrame(loop); return; } }
+    step(now); raf = requestAnimationFrame(loop);
+  };
+  const kick = () => { if (!raf && !REDUCED) raf = requestAnimationFrame(loop); };
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
+
+  prime();                                        // 一載入就量得到寬度的話，先把軌跡跑滿
+  if (!REDUCED) kick();
+
 }
 
 /* ═════ 12 · 蜂窩底紋的觸碰效果 ═════
@@ -1073,8 +1283,8 @@ const boot = () => {
   LANG = pickInitialLang();
   langSwitcher();
 
-  nav(); marquees(); hero(); lanes(); lists();
-  arc(); soon(); soonCopy(); offer(); counters(); parallax(); aboutViz(); combHover();
+  nav(); contactModal(); marquees(); hero(); lanes(); lists();
+  arc(); soon(); soonCopy(); offer(); lineupMeta(); counters(); parallax(); aboutViz(); combHover();
   heroParallax(); spotlight(); magnetic(); chrome(); cellGrid();
   reveals(); heroChoreo();
 

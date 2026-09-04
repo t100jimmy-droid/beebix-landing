@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500&family=Noto+Sans+Thai:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/tokens.css?v=49">
-<link rel="stylesheet" href="assets/css/style.css?v=49">
+<link rel="stylesheet" href="assets/css/tokens.css?v=50">
+<link rel="stylesheet" href="assets/css/style.css?v=50">
 </head>
 <body>
 
@@ -19,18 +19,18 @@
   <div class="shell">
     <nav class="nav-pill">
       <a class="nav-logo" href="#top" aria-label="BeeBix 首頁">
-        <img src="assets/logo/02_mono_white.svg" alt="BeeBix">
+        <img src="assets/logo/08_duo_dark.svg" alt="BeeBix">
       </a>
       <ul class="nav-links">
         <li><a href="#games" data-i18n="nav.try">Try Games</a></li>
         <li class="has-menu">
           <button type="button" aria-expanded="false">Games <i class="chev"></i></button>
           <div class="submenu">
-            <a href="#offer" data-i18n="nav.overview">Games Overview</a><a href="#offer" data-i18n="nav.slots">Slots</a>
-            <a href="#offer" data-i18n="nav.live">Live Casino</a><a href="#offer" data-i18n="nav.instant">Instant &amp; Crash</a>
+            <a href="#games" data-i18n="nav.overview">Games Overview</a><a href="#offer" data-offer="0" data-i18n="nav.slots">Slots</a>
+            <a href="#offer" data-offer="1" data-i18n="nav.live">Live Casino</a><a href="#offer" data-offer="2" data-i18n="nav.instant">Instant &amp; Crash</a>
           </div>
         </li>
-        <li><a href="#soon" data-i18n="nav.rewards">Rewards</a></li>
+        <li><a href="#offer" data-offer="3" data-i18n="nav.rewards">Rewards</a></li>
         <li><a href="#studios" data-i18n="nav.studios">Studios</a></li>
         <li class="has-menu">
           <button type="button" aria-expanded="false">Discover <i class="chev"></i></button>
@@ -109,23 +109,17 @@
     </h2>
     <!-- 右側空白處的遙測面板：離散階梯線＝數學，連續曲線＝美術，呼應標題語意 -->
     <div class="viz" data-reveal aria-hidden="true">
-      <p class="viz-head"><i class="viz-dot"></i><span data-i18n="about.vizLabel">ENGINE TELEMETRY</span></p>
-      <div class="viz-plot">
-        <svg class="viz-svg" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <g class="viz-grid"></g>
-          <g class="viz-run viz-run--math"><path/></g>
-          <g class="viz-run viz-run--art"><path/></g>
-        </svg>
-        <i class="viz-scan"></i>
-      </div>
+      <p class="viz-head"><i class="viz-dot"></i><span data-i18n="about.vizLabel">EMOTION × VOLATILITY</span></p>
+      <!-- 即時物理模擬：灰＝彈跳球軌跡（拋物線、衰減、補力），黃＝彈簧振盪；線頭重合時噴粒子 -->
+      <div class="viz-plot"><canvas class="viz-cv" aria-hidden="true"></canvas></div>
       <p class="viz-legend">
-        <span class="vg vg--math"><i></i><span data-i18n="about.vizMath">MATH · DISCRETE</span></span>
-        <span class="vg vg--art"><i></i><span data-i18n="about.vizArt">ART · CONTINUOUS</span></span>
+        <span class="vg vg--math"><i></i><span data-i18n="about.vizMath">SYSTEM VOLATILITY</span></span>
+        <span class="vg vg--art"><i></i><span data-i18n="about.vizArt">PLAYER EMOTION</span></span>
       </p>
       <ul class="viz-reads">
-        <li><span data-i18n="about.viz1">ENGINE FPS</span><b data-viz="fps">60.0</b></li>
-        <li><span data-i18n="about.viz2">MODEL RTP</span><b data-viz="rtp">96.3%</b></li>
-        <li><span data-i18n="about.viz3">DELIVERY</span><b data-viz="lat">12ms</b></li>
+        <li><span data-i18n="about.viz1">HIT MOMENTS</span><b data-viz="hit">0</b></li>
+        <li><span data-i18n="about.viz2">EMOTION PEAK</span><b data-viz="emo">0%</b></li>
+        <li><span data-i18n="about.viz3">VOLATILITY</span><b data-viz="vol">0%</b></li>
       </ul>
     </div>
     </div><!-- /.head-row -->
@@ -176,10 +170,28 @@
 
   <div class="shell">
     <p class="eyebrow" data-reveal><i class="rule"></i><span data-i18n="games.eyebrow">02 — PORTFOLIO</span></p>
+    <!-- 與 About 區同一套 head-row：大標在左，右側原本整片空白，改放陣容速覽 -->
+    <div class="head-row">
     <h2 class="ghost" data-reveal>
       <span class="gl gl--a" data-i18n="games.h1">THE LINEUP</span>
       <span class="gl gl--b" data-i18n="games.h2">THAT PERFORMS<i class="deco"></i></span>
     </h2>
+    <!-- 陣容速覽：三個數字由 data.js 算出（lineupMeta），不寫死；下方是卡片標籤的圖例 -->
+    <div class="lineup" data-reveal>
+      <ul class="lineup-reads">
+        <li><b data-count="20">20</b><span data-i18n="games.lu1">FEATURED</span></li>
+        <li><b data-count="10">10</b><span data-i18n="games.lu2">COMING SOON</span></li>
+        <li><b data-count="4">4</b><span data-i18n="games.lu3">CATEGORIES</span></li>
+      </ul>
+      <p class="lineup-key">
+        <span class="lk-label" data-i18n="games.luKey">TYPE KEY</span>
+        <span class="lk" data-i18n="tag.slots">SLOTS</span>
+        <span class="lk" data-i18n="tag.live">LIVE CASINO</span>
+        <span class="lk" data-i18n="tag.instant">INSTANT</span>
+        <span class="lk" data-i18n="tag.rewards">REWARDS</span>
+      </p>
+    </div>
+    </div><!-- /.head-row -->
     <div class="sec-intro" data-reveal>
       <h3 data-i18n="games.sub">Certified player magnets</h3>
       <p data-i18n="games.body">重製經典、原生新機制、跨題材聯名——每一款都先過留存與轉換的關卡，才會出現在這份清單上。</p>
@@ -333,8 +345,8 @@
         <p class="f-copy" data-i18n="foot.copy">© 2026 BeeBix. All rights reserved.</p>
         <span class="f-18">18+</span>
       </div>
-      <div class="f-col"><h4>BeeBix</h4><a href="#top" data-i18n="foot.home">Home</a><a href="#why">About</a><a href="#studios">Studios</a><a href="#soon">Rewards</a><a href="#soon">News</a><a href="#contact">Partner Hub</a></div>
-      <div class="f-col"><h4>Games</h4><a href="#games" data-i18n="foot.overview">Overview</a><a href="#offer">Slots</a><a href="#offer">Live Casino</a><a href="#offer">Instant &amp; Crash</a><a href="#offer" data-i18n="foot.jackpot">Jackpot Network</a></div>
+      <div class="f-col"><h4>BeeBix</h4><a href="#top" data-i18n="foot.home">Home</a><a href="#why">About</a><a href="#studios">Studios</a><a href="#offer" data-offer="3">Rewards</a><a href="#soon">News</a><a href="#contact">Partner Hub</a></div>
+      <div class="f-col"><h4>Games</h4><a href="#games" data-i18n="foot.overview">Overview</a><a href="#offer" data-offer="0">Slots</a><a href="#offer" data-offer="1">Live Casino</a><a href="#offer" data-offer="2">Instant &amp; Crash</a><a href="#offer" data-i18n="foot.jackpot">Jackpot Network</a></div>
       <div class="f-col"><h4 data-i18n="foot.follow">Follow Us</h4>
         <a href="#" class="f-soc">Instagram <i class="dot"></i></a>
         <a href="#" class="f-soc">LinkedIn <i class="dot"></i></a>
@@ -344,8 +356,21 @@
   </div>
 </footer>
 
-<script src="assets/js/i18n.js?v=49"></script>
-<script src="assets/js/data.js?v=49"></script>
-<script src="assets/js/main.js?v=49"></script>
+<!-- ═══════════ 聯絡彈窗：所有「行動型」連結點了都開這裡；區塊導覽不受影響 ═══════════ -->
+<div class="cm" id="contactModal" hidden>
+  <div class="cm-backdrop" data-cm-close></div>
+  <div class="cm-panel" role="dialog" aria-modal="true" aria-labelledby="cmTitle">
+    <button class="cm-x" type="button" data-cm-close aria-label="Close"><span aria-hidden="true">×</span></button>
+    <p class="eyebrow"><i class="rule"></i><span data-i18n="cm.eyebrow">GET IN TOUCH</span></p>
+    <h2 class="cm-title" id="cmTitle" data-i18n="cm.title">Let's talk. Three ways to reach us.</h2>
+    <p class="cm-sub" data-i18n="cm.sub">Pick whichever is easiest, or copy the handle.</p>
+    <p class="cm-re" id="cmRe" hidden><span data-i18n="cm.re">RE</span>: <b id="cmReLabel"></b></p>
+    <ul class="cm-list" id="cmList"></ul>
+  </div>
+</div>
+
+<script src="assets/js/i18n.js?v=50"></script>
+<script src="assets/js/data.js?v=50"></script>
+<script src="assets/js/main.js?v=50"></script>
 </body>
 </html>
