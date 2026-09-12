@@ -1195,3 +1195,93 @@ html.cm-open{ overflow:hidden }
   .cm-act{ grid-column:1 / -1; padding-left:54px }
 }
 @media (prefers-reduced-motion:reduce){ .cm-backdrop,.cm-panel,.cm-row,.cm-btn,.cm-x{ transition:none } }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   同步精簡版抓到的同類缺陷修正（2026-09-12）
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* 跳至主內容：鍵盤原本要按數十次 Tab 才碰得到第一個內容元素 */
+.skip-link{ position:fixed; left:50%; top:-80px; translate:-50% 0; z-index:200;
+  display:inline-flex; align-items:center; min-height:48px; padding:0 24px;
+  border-radius:0 0 14px 14px; background:var(--a-primary); color:var(--t-on-accent);
+  font-family:var(--ff-b); font-weight:700; font-size:15px; transition:top .24s var(--e-out) }
+.skip-link:focus{ top:0 }
+.skip-link:focus-visible{ outline:3px solid var(--wht); outline-offset:-6px }
+
+/* 尚未開放的連結要有明確回饋，不能靜默無事 */
+[data-nolink]{ position:relative }
+[data-nolink].is-soon::after{ content:attr(data-soon); position:absolute; left:50%; bottom:calc(100% + 8px);
+  translate:-50% 0; z-index:60; white-space:nowrap; padding:7px 12px; border-radius:9px;
+  background:var(--s-card); border:1px solid rgba(255,199,0,.5); color:var(--a-primary);
+  font-family:var(--ff-c); font-size:12px; pointer-events:none; animation:soonTip 2.2s var(--e-out) both }
+@keyframes soonTip{ 0%{opacity:0; translate:-50% 6px} 12%,78%{opacity:1; translate:-50% 0} 100%{opacity:0; translate:-50% -4px} }
+
+/* 桌機下拉改由 .open 控制，鍵盤才打得開 */
+.has-menu.open .submenu{ opacity:1; visibility:visible; transform:none }
+.has-menu.open .chev{ transform:rotate(180deg) }
+.submenu a:focus-visible{ outline:2px solid var(--a-primary); outline-offset:-2px; border-radius:8px }
+
+/* 輪播卡的焦點框原本被卡面圖蓋住 → 改用畫在最上層的偽元素 */
+.hcard{ position:relative }
+.hcard:focus-visible{ outline:none }
+.hcard:focus-visible::after{ content:''; position:absolute; inset:-4px; z-index:20; pointer-events:none;
+  border:3px solid var(--a-primary); border-radius:18px;
+  box-shadow:0 0 0 3px rgba(11,11,12,.85), 0 0 22px rgba(255,199,0,.6) }
+.hero-cards{ overflow:visible }
+.hero-cards-run{ padding-block:6px }
+
+/* 手機抽屜：半透明看不清、背景可捲、關閉的 X 看不見、沒有語言入口 */
+@media (max-width:1024px){
+  body.nav-open .nav-links{ background:rgba(15,16,19,.97);
+    -webkit-backdrop-filter:blur(26px); backdrop-filter:blur(26px);
+    box-shadow:0 30px 70px rgba(0,0,0,.7); max-height:calc(100svh - 112px); overflow-y:auto }
+  .nav-scrim{ position:fixed; inset:0; z-index:94; background:rgba(0,0,0,.66);
+    -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px);
+    opacity:0; visibility:hidden; transition:opacity .26s var(--e), visibility .26s }
+  body.nav-open .nav-scrim{ opacity:1; visibility:visible }
+  body.nav-open .burger{ background:var(--s-card); border:1px solid var(--a-primary) }
+  body.nav-open .burger span{ background:var(--a-primary) }
+  .nav-lang-row{ display:flex; align-items:center; justify-content:space-between; gap:12px;
+    margin-top:10px; padding:14px 14px 4px; border-top:1px solid var(--b-subtle) }
+  .nav-lang-row .nll{ font-family:var(--ff-c); font-size:13px; color:var(--t-muted) }
+  .nav-lang-btns{ display:flex; gap:8px }
+  .nav-lang-btns button{ min-width:52px; min-height:44px; padding:0 14px; border-radius:10px;
+    border:1px solid var(--b-subtle); background:var(--s-card); color:var(--t-muted);
+    font-family:var(--ff-b); font-weight:600; font-size:14px; transition:.25s var(--e) }
+  .nav-lang-btns button[aria-pressed="true"]{ background:var(--a-primary); color:var(--t-on-accent); border-color:var(--a-primary) }
+  .nav-lang-btns button:focus-visible{ outline:2px solid var(--a-primary); outline-offset:2px }
+  .nav-logo{ display:inline-flex; align-items:center; min-height:46px }
+  .burger{ width:46px; height:46px }
+}
+@media (min-width:1025px){ .nav-lang-row{ display:none } .nav-scrim{ display:none } }
+
+/* 手機命中區與字級 */
+.f-col a,.f-links a,.f-soc{ display:inline-flex; align-items:center; min-height:44px }
+@media (max-width:720px){
+  .nav-links a,.nav-links button,.submenu a{ min-height:48px }
+  .offer-list button{ min-height:56px }
+  .cta-info a{ display:inline-flex; align-items:center; min-height:44px }
+  .hero-stats span,.viz-legend,.viz-reads span,.f-col a,.f-links,.eyebrow,.sec-label{ font-size:12px }
+  .hcard-tag,.soon-tile .d,.soon-tile .n,.offer-list .n{ font-size:11.5px }
+  /* 工作室區在手機上留白過大，掃描器量到兩段各 300px 的空白帶 */
+  .studios{ min-height:auto; padding:64px 0 }
+}
+
+/* JS 掛掉時的空洞容器保底 */
+#statsList:empty,#proofList:empty,#offerList:empty,#soonCols:empty{ min-height:120px; position:relative }
+#statsList:empty::after,#proofList:empty::after,#offerList:empty::after,#soonCols:empty::after{
+  content:''; position:absolute; inset:0; border-radius:16px;
+  background:repeating-linear-gradient(115deg, rgba(255,255,255,.03) 0 14px, transparent 14px 28px);
+  border:1px dashed var(--b-subtle) }
+
+/* body 的 opacity 閘門：臨界樣式已能先畫，不需要整頁淡入等 JS */
+body{ opacity:1 }
+body.ready{ opacity:1 }
+.site-header{ animation:headerFailsafe .5s ease 2.2s forwards }
+@keyframes headerFailsafe{ to{ transform:none; opacity:1 } }
+body.ready .site-header{ animation:none }
+
+@media (prefers-reduced-motion: reduce){
+  .skip-link,.nav-scrim{ transition:none }
+  [data-nolink].is-soon::after{ animation:none; opacity:1 }
+}

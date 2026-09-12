@@ -73,6 +73,8 @@ const applyI18n = () => {
   if (cur) cur.textContent = meta ? meta.short : LANG.toUpperCase();
   $$('.lang-menu button').forEach(b =>
     b.setAttribute('aria-selected', String(b.dataset.lang === LANG)));
+  $$('.nav-lang-btns button').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.lang === LANG)));
   const tt = $('.to-top'); if (tt) tt.setAttribute('aria-label', t('ui.toTop'));
   const bg = $('.burger');  if (bg) bg.setAttribute('aria-label', t('ui.menu'));
   const cx = $('.cm-x');    if (cx) cx.setAttribute('aria-label', t('cm.close'));
@@ -109,6 +111,20 @@ function langSwitcher(){
   });
   addEventListener('click', close);
   addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+
+  /* ≤1024px 時 .lang 被 display:none，手機使用者完全找不到語言切換 → 抽屜底部補一列 */
+  const row = $('.nav-lang-btns');
+  if (row){
+    const paint = () => { row.innerHTML = LANGS.map(l =>
+      `<button type="button" data-lang="${l.code}" lang="${l.htmlLang}"
+               aria-pressed="${l.code === LANG}">${l.short}</button>`).join(''); };
+    paint();
+    row.addEventListener('click', e => {
+      const b = e.target.closest('button[data-lang]');
+      if (!b) return;
+      setLang(b.dataset.lang); paint();
+    });
+  }
 }
 
 /* ═════ 1 · 導覽列（隱藏／展開／scrollspy）═════ */
@@ -122,26 +138,83 @@ function nav(){
     if (Math.abs(y - last) > 2) last = y;
   });
 
-  $('.burger').addEventListener('click', () => document.body.classList.toggle('nav-open'));
-  $$('.nav-links a').forEach(a => a.addEventListener('click', () => document.body.classList.remove('nav-open')));
+  /* 抽屜打開要鎖住背景捲動，並補一層遮罩把後面的內容壓暗 */
+  let lockY = 0;
+  const setNav = open => {
+    if (open === document.body.classList.contains('nav-open')) return;
+    if (open){
+      lockY = scrollY;
+      document.body.classList.add('nav-open');
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${lockY}px`;
+      document.body.style.width = '100%';
+    } else {
+      document.body.classList.remove('nav-open');
+      document.body.style.position = ''; document.body.style.top = ''; document.body.style.width = '';
+      scrollTo(0, lockY);
+    }
+    burger.setAttribute('aria-expanded', String(open));
+  };
+  const scrim = document.createElement('div');
+  scrim.className = 'nav-scrim';
+  scrim.addEventListener('click', () => setNav(false));
+  document.body.appendChild(scrim);
+  const burger = $('.burger');
+  burger.setAttribute('aria-expanded', 'false');
+  burger.setAttribute('aria-controls', 'navLinks');
+  burger.addEventListener('click', () => setNav(!document.body.classList.contains('nav-open')));
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.body.classList.contains('nav-open')){ setNav(false); burger.focus(); } });
+  $$('.nav-links a').forEach(a => a.addEventListener('click', () => setNav(false)));
 
-  $$('.has-menu > button').forEach(b => b.addEventListener('click', () => {
-    if (innerWidth > 1024) return;
-    const open = b.getAttribute('aria-expanded') === 'true';
-    b.setAttribute('aria-expanded', String(!open));
-    b.parentElement.classList.toggle('open', !open);
-  }));
+  /* 原本桌機直接 return、只靠 CSS :hover 開下拉 → 鍵盤使用者永遠到不了子連結 */
+  const menus = $$('.has-menu');
+  const setMenu = (li, open) => {
+    li.classList.toggle('open', open);
+    $('button', li).setAttribute('aria-expanded', String(open));
+    $$('.submenu a', li).forEach(a => a.tabIndex = open ? 0 : -1);
+  };
+  menus.forEach(li => {
+    const b = $('button', li);
+    setMenu(li, false);
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      const open = b.getAttribute('aria-expanded') === 'true';
+      menus.forEach(o => { if (o !== li) setMenu(o, false); });
+      setMenu(li, !open);
+    });
+    li.addEventListener('pointerleave', () => { if (!li.contains(document.activeElement)) setMenu(li, false); });
+    li.addEventListener('focusout', () => setTimeout(() => {
+      if (!li.contains(document.activeElement)) setMenu(li, false); }, 0));
+  });
+  addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const open = menus.find(li => li.classList.contains('open'));
+    if (open){ setMenu(open, false); $('button', open).focus(); }
+  });
+  document.addEventListener('click', e => {
+    if (e.target.closest('.has-menu')) return;
+    menus.forEach(li => setMenu(li, false));
+  });
 
   const HEADER_GAP = 96;                       // 固定導覽列高度 + 呼吸空間
   document.addEventListener('click', e => {
     const a = e.target.closest('a[href^="#"]');
     if (!a) return;
     const id = a.getAttribute('href');
-    if (id === '#'){ e.preventDefault(); return; }   // 佔位連結：不要跳回頁頂
-    const t = $(id);
-    if (!t) return;
+    if (id === '#'){
+      e.preventDefault();
+      if (a.dataset.nolink != null){            // 明確告知「尚未開放」，而不是點了沒事
+        a.classList.remove('is-soon'); void a.offsetWidth; a.classList.add('is-soon');
+        a.setAttribute('data-soon', t('ui.soon'));
+        setTimeout(() => a.classList.remove('is-soon'), 2200);
+      }
+      return;
+    }
+    const target = $(id);          // 不能叫 t：會遮蔽模組層的翻譯函式 t()
+    if (!target) return;
     e.preventDefault();
-    scrollTo({ top: t.getBoundingClientRect().top + scrollY - HEADER_GAP, behavior: REDUCED ? 'auto' : 'smooth' });
+    scrollTo({ top: target.getBoundingClientRect().top + scrollY - HEADER_GAP, behavior: REDUCED ? 'auto' : 'smooth' });
     if (location.hash !== id) history.pushState(null, '', id);   // 讓上一頁／分享網址有意義
     // 深連結：捲到區塊後，把對應的卡片／方案帶到前面
     if (a.dataset.arc   !== undefined) arcGoTo(+a.dataset.arc);
@@ -246,7 +319,9 @@ function heroChoreo(){
 function marquees(){
   const anims = [];
   $$('.marquee-run').forEach(run => {
-    run.innerHTML += run.innerHTML;                 // 複製一份 → translateX(-50%) 無縫
+    // 複製一份 → translateX(-50%) 無縫。複製件標 aria-hidden，否則讀屏會唸兩遍。
+    const dup = run.cloneNode(true);
+    [...dup.children].forEach(n => { n.setAttribute('aria-hidden', 'true'); run.appendChild(n); });
     if (REDUCED) return;
     anims.push(run.animate(
       [{ transform:'translateX(0)' }, { transform:'translateX(-50%)' }],
@@ -274,8 +349,10 @@ function hero(){
   const card = g => `
     <a class="hcard" href="${linkFor(g.t)}"${dataFor(g.t)} aria-label="${g.t}">
       <div class="hcard-media spot">
-        <img class="bg" src="${g.bg}" alt="" loading="lazy">
-        <img class="hcard-char" src="${g.ch}" alt="" loading="lazy">
+        <!-- 不能用 lazy：軌道靠 transform 位移，瀏覽器判斷 lazy 用的是版面位置，
+             軌道的版面位置永遠在視窗外，第 5 張之後就永遠不載入。要省頻寬用 fetchpriority。 -->
+        <img class="bg" src="${g.bg}" alt="" loading="eager" decoding="async" fetchpriority="low">
+        <img class="hcard-char" src="${g.ch}" alt="" loading="eager" decoding="async" fetchpriority="low">
         <span class="hcard-tag">${t(g.tag)}</span>
         <div class="hcard-veil"></div>
         <div class="hcard-foot"><h3>${g.t}</h3>${ARW}</div>
@@ -286,7 +363,9 @@ function hero(){
   const run = document.createElement('div');
   run.className = 'hero-cards-run';
   const html = HERO.map(card).join('');
-  run.innerHTML = html + html;
+  run.innerHTML = html;
+  const dupRun = run.cloneNode(true);            // 複製件不進焦點順序，也不被讀屏唸第二遍
+  [...dupRun.children].forEach(n => { n.setAttribute('aria-hidden', 'true'); n.tabIndex = -1; run.appendChild(n); });
   viewport.replaceChildren(run);
 
   if (REDUCED) return;
@@ -317,7 +396,7 @@ function hero(){
 function lanes(){
   const build = (el, list) => {
     if (!el) return;
-    const html = list.map(src => `<img src="${src}" alt="" loading="lazy">`).join('');
+    const html = list.map(src => `<img src="${src}" alt="" loading="eager" decoding="async" fetchpriority="low">`).join('');
     el.innerHTML = html + html;
     if (REDUCED) return;
     const dir = +(el.dataset.dir || 1);
@@ -683,7 +762,8 @@ function lists(){
 }
 
 /* ═════ 10a · 聯絡彈窗：行動型連結一律開這裡；區塊導覽不受影響 ═════ */
-const CM_TRIGGER = '.btn, .btn-ghost, a[href^="mailto:"], a[href="#"], .hcard, .gcard.is-active';
+/* 法務與社群連結不該開業務洽談彈窗：標成 data-nolink，點擊改成明確的「尚未開放」提示 */
+const CM_TRIGGER = '.btn, .btn-ghost, a[href^="mailto:"], a[href="#"]:not([data-nolink]), .hcard, .gcard.is-active';
 const CM_ICON = {
   email:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 7l9 6 9-6"/></svg>',
   tg:   '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4L3 11l6 2.5L11 20l3-4 5 3z"/><path d="M9 13.5l10-8"/></svg>',
